@@ -1,50 +1,101 @@
-# Welcome to your Expo app 👋
+# Utilix
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A utility-focused Expo app with responsive file-based routing, theming, and cross-platform support for iOS, Android, and Web.
 
-## Get started
+## Features
+
+- Expo + React Native (TypeScript)
+- File-based navigation using `app/` folder routes
+- Theme-aware components (`constants/theme.ts`, `hooks/use-theme-color.ts`)
+- Reusable UI building blocks in `components/ui`
+- Utilities, screens, and external links for quick extension
+
+## Quick start
 
 1. Install dependencies
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Run locally
 
-## Learn more
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+3. Choose:
+- `a` for Android emulator/device
+- `i` for iOS simulator/device
+- `w` for web browser
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Recommended commands
 
-## Join the community
+- `npm run ios` (if configured) or through Expo Dev Tools
+- `npm run android` (if configured)
+- `npm run web`
+- `npm run lint` (as available in your setup)
 
-Join our community of developers creating universal apps.
+## Project structure
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```
+.
+├── App.js
+├── app.json
+├── package.json
+├── tsconfig.json
+├── README.md
+├── assets
+│   └── images
+├── app
+│   ├── _layout.tsx
+│   ├── modal.tsx
+│   └── (tabs)
+│       ├── _layout.tsx
+│       ├── explore.tsx
+│       └── index.tsx
+├── components
+│   ├── external-link.tsx
+│   ├── haptic-tab.tsx
+│   ├── hello-wave.tsx
+│   ├── parallax-scroll-view.tsx
+│   ├── themed-text.tsx
+│   ├── themed-view.tsx
+│   └── ui
+│       ├── collapsible.tsx
+│       ├── icon-symbol.ios.tsx
+│       └── icon-symbol.tsx
+├── constants
+│   └── theme.ts
+├── hooks
+│   ├── use-color-scheme.ts
+│   ├── use-color-scheme.web.ts
+│   └── use-theme-color.ts
+├── screens
+│   ├── Homescreen.js
+│   └── Unitconverter.js
+└── scripts
+    └── reset-project.js
+```
+
+## Folder breakdown
+
+- `app/`: Routed screens, layout, and modal definitions for Expo Router
+- `components/`: Shared UI components and helper widgets
+- `constants/`: App-wide constants like theme colors and typography
+- `hooks/`: Custom hooks for theming and platform-specific behavior
+- `screens/`: Legacy or standalone screen entries
+- `scripts/`: Automation and setup scripts
+
+## Contributing
+
+1. Fork the repo
+2. Create a branch: `git checkout -b feature/name`
+3. Add code and tests
+4. Submit a PR
+
+## Notes
+
+- Keep component styling in `constants/theme.ts` and `components/ui`
+- Reuse hooks from `hooks/` to keep theme sync across platforms
+- Check `app/_layout.tsx` and `app/(tabs)/_layout.tsx` for core navigation plumbing
