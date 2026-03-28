@@ -1,73 +1,41 @@
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { StyleSheet, ScrollView, View } from 'react-native';
 import { Text, Card, Button, Avatar } from 'react-native-paper';
 import { router } from 'expo-router';
 
 export default function HomeScreen() {
+  const features = [
+    { title: 'Unit Converter', icon: 'swap-horizontal', route: '/unit' },
+    { title: 'Calculator', icon: 'calculator', route: '/calculator' },
+    { title: 'Flashlight', icon: 'flashlight' },
+    { title: 'Sound Meter', icon: 'microphone' },
+    { title: 'Storage Analyzer', icon: 'folder' },
+    { title: 'Internet Speed', icon: 'wifi' },
+  ];
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Utilix</Text>
 
-      <Card style={styles.card}>
-        <Card.Title
-          title="Unit Converter"
-          left={(props) => <Avatar.Icon {...props} icon="swap-horizontal" />}
-        />
-        <Card.Actions>
-          <Button onPress={() => router.push('/unit')}>Open</Button>
-        </Card.Actions>
-      </Card>
-
-      <Card style={styles.card}>
-        <Card.Title
-          title="Calculator"
-          left={(props) => <Avatar.Icon {...props} icon="calculator" />}
-        />
-        <Card.Actions>
-          <Button onPress={() => router.push('/calculator')}>
-            Open
-          </Button>
-        </Card.Actions>
-      </Card>
-
-      <Card style={styles.card}>
-        <Card.Title
-          title="Flashlight"
-          left={(props) => <Avatar.Icon {...props} icon="flashlight" />}
-        />
-        <Card.Actions>
-          <Button>Open</Button>
-        </Card.Actions>
-      </Card>
-
-      <Card style={styles.card}>
-        <Card.Title
-          title="Sound Meter"
-          left={(props) => <Avatar.Icon {...props} icon="microphone" />}
-        />
-        <Card.Actions>
-          <Button>Open</Button>
-        </Card.Actions>
-      </Card>
-
-      <Card style={styles.card}>
-        <Card.Title
-          title="Storage Analyzer"
-          left={(props) => <Avatar.Icon {...props} icon="folder" />}
-        />
-        <Card.Actions>
-          <Button>Open</Button>
-        </Card.Actions>
-      </Card>
-
-      <Card style={styles.card}>
-        <Card.Title
-          title="Internet Speed"
-          left={(props) => <Avatar.Icon {...props} icon="wifi" />}
-        />
-        <Card.Actions>
-          <Button>Open</Button>
-        </Card.Actions>
-      </Card>
+      <View style={styles.grid}>
+        {features.map((item, index) => (
+          <Card key={index} style={styles.card}>
+            <Card.Title
+              title={item.title}
+              titleStyle={{ fontSize: 14 }}
+              left={(props) => (
+                <Avatar.Icon {...props} icon={item.icon} size={40} />
+              )}
+            />
+            <Card.Actions>
+              <Button
+                onPress={() => item.route && router.push(item.route)}
+              >
+                Open
+              </Button>
+            </Card.Actions>
+          </Card>
+        ))}
+      </View>
     </ScrollView>
   );
 }
@@ -75,16 +43,26 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 15,
-    gap: 12,
-    paddingBottom: 30, // extra space at bottom
+    paddingBottom: 30,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 15,
     textAlign: 'center',
   },
+
+  // 🔥 GRID STYLE
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+
+  // 🔥 EACH CARD = 2 columns
   card: {
+    width: '48%',   // IMPORTANT → makes 2 columns
+    marginBottom: 12,
     borderRadius: 12,
     elevation: 3,
   },
