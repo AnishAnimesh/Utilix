@@ -10,10 +10,13 @@ import {
   StatusBar,
   Platform,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type Category = 'length' | 'weight' | 'temperature' | 'volume' | 'speed';
+type Category = 'length' | 'weight' | 'temperature' | 'volume' | 'speed' | 'sound';
+
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
 interface UnitDef {
   label: string;
@@ -22,59 +25,120 @@ interface UnitDef {
   fromBase: (v: number) => number;
 }
 
+interface CategoryMeta {
+  icon: IoniconsName;
+  color: string;
+}
+
 // ─── Unit Definitions ────────────────────────────────────────────────────────
 
 const UNITS: Record<Category, Record<string, UnitDef>> = {
   length: {
-    mm:    { label: 'Millimetre',  symbol: 'mm',  toBase: v => v * 0.001,        fromBase: v => v / 0.001 },
-    cm:    { label: 'Centimetre',  symbol: 'cm',  toBase: v => v * 0.01,         fromBase: v => v / 0.01 },
-    m:     { label: 'Metre',       symbol: 'm',   toBase: v => v,                fromBase: v => v },
-    km:    { label: 'Kilometre',   symbol: 'km',  toBase: v => v * 1000,         fromBase: v => v / 1000 },
-    in:    { label: 'Inch',        symbol: 'in',  toBase: v => v * 0.0254,       fromBase: v => v / 0.0254 },
-    ft:    { label: 'Foot',        symbol: 'ft',  toBase: v => v * 0.3048,       fromBase: v => v / 0.3048 },
-    yd:    { label: 'Yard',        symbol: 'yd',  toBase: v => v * 0.9144,       fromBase: v => v / 0.9144 },
-    mi:    { label: 'Mile',        symbol: 'mi',  toBase: v => v * 1609.344,     fromBase: v => v / 1609.344 },
+    mm:    { label: 'Millimetre',  symbol: 'mm',   toBase: v => v * 0.001,           fromBase: v => v / 0.001 },
+    cm:    { label: 'Centimetre',  symbol: 'cm',   toBase: v => v * 0.01,            fromBase: v => v / 0.01 },
+    m:     { label: 'Metre',       symbol: 'm',    toBase: v => v,                   fromBase: v => v },
+    km:    { label: 'Kilometre',   symbol: 'km',   toBase: v => v * 1000,            fromBase: v => v / 1000 },
+    in:    { label: 'Inch',        symbol: 'in',   toBase: v => v * 0.0254,          fromBase: v => v / 0.0254 },
+    ft:    { label: 'Foot',        symbol: 'ft',   toBase: v => v * 0.3048,          fromBase: v => v / 0.3048 },
+    yd:    { label: 'Yard',        symbol: 'yd',   toBase: v => v * 0.9144,          fromBase: v => v / 0.9144 },
+    mi:    { label: 'Mile',        symbol: 'mi',   toBase: v => v * 1609.344,        fromBase: v => v / 1609.344 },
   },
   weight: {
-    mg:    { label: 'Milligram',   symbol: 'mg',  toBase: v => v * 0.000001,     fromBase: v => v / 0.000001 },
-    g:     { label: 'Gram',        symbol: 'g',   toBase: v => v * 0.001,        fromBase: v => v / 0.001 },
-    kg:    { label: 'Kilogram',    symbol: 'kg',  toBase: v => v,                fromBase: v => v },
-    t:     { label: 'Metric Ton',  symbol: 't',   toBase: v => v * 1000,         fromBase: v => v / 1000 },
-    oz:    { label: 'Ounce',       symbol: 'oz',  toBase: v => v * 0.0283495,    fromBase: v => v / 0.0283495 },
-    lb:    { label: 'Pound',       symbol: 'lb',  toBase: v => v * 0.453592,     fromBase: v => v / 0.453592 },
-    st:    { label: 'Stone',       symbol: 'st',  toBase: v => v * 6.35029,      fromBase: v => v / 6.35029 },
+    mg:    { label: 'Milligram',   symbol: 'mg',   toBase: v => v * 0.000001,        fromBase: v => v / 0.000001 },
+    g:     { label: 'Gram',        symbol: 'g',    toBase: v => v * 0.001,           fromBase: v => v / 0.001 },
+    kg:    { label: 'Kilogram',    symbol: 'kg',   toBase: v => v,                   fromBase: v => v },
+    t:     { label: 'Metric Ton',  symbol: 't',    toBase: v => v * 1000,            fromBase: v => v / 1000 },
+    oz:    { label: 'Ounce',       symbol: 'oz',   toBase: v => v * 0.0283495,       fromBase: v => v / 0.0283495 },
+    lb:    { label: 'Pound',       symbol: 'lb',   toBase: v => v * 0.453592,        fromBase: v => v / 0.453592 },
+    st:    { label: 'Stone',       symbol: 'st',   toBase: v => v * 6.35029,         fromBase: v => v / 6.35029 },
   },
   temperature: {
-    C:     { label: 'Celsius',     symbol: '°C',  toBase: v => v,                fromBase: v => v },
-    F:     { label: 'Fahrenheit',  symbol: '°F',  toBase: v => (v - 32) * 5/9,  fromBase: v => v * 9/5 + 32 },
-    K:     { label: 'Kelvin',      symbol: 'K',   toBase: v => v - 273.15,       fromBase: v => v + 273.15 },
-    R:     { label: 'Rankine',     symbol: '°R',  toBase: v => (v - 491.67) * 5/9, fromBase: v => v * 9/5 + 491.67 },
+    C:     { label: 'Celsius',     symbol: '°C',   toBase: v => v,                   fromBase: v => v },
+    F:     { label: 'Fahrenheit',  symbol: '°F',   toBase: v => (v - 32) * 5 / 9,   fromBase: v => v * 9 / 5 + 32 },
+    K:     { label: 'Kelvin',      symbol: 'K',    toBase: v => v - 273.15,          fromBase: v => v + 273.15 },
+    R:     { label: 'Rankine',     symbol: '°R',   toBase: v => (v - 491.67) * 5/9, fromBase: v => v * 9/5 + 491.67 },
   },
   volume: {
-    ml:    { label: 'Millilitre',  symbol: 'mL',  toBase: v => v * 0.001,        fromBase: v => v / 0.001 },
-    l:     { label: 'Litre',       symbol: 'L',   toBase: v => v,                fromBase: v => v },
-    m3:    { label: 'Cubic Metre', symbol: 'm³',  toBase: v => v * 1000,         fromBase: v => v / 1000 },
-    tsp:   { label: 'Teaspoon',    symbol: 'tsp', toBase: v => v * 0.00492892,   fromBase: v => v / 0.00492892 },
-    tbsp:  { label: 'Tablespoon',  symbol: 'tbsp',toBase: v => v * 0.0147868,    fromBase: v => v / 0.0147868 },
-    cup:   { label: 'Cup',         symbol: 'cup', toBase: v => v * 0.236588,     fromBase: v => v / 0.236588 },
-    pt:    { label: 'Pint',        symbol: 'pt',  toBase: v => v * 0.473176,     fromBase: v => v / 0.473176 },
-    gal:   { label: 'Gallon',      symbol: 'gal', toBase: v => v * 3.78541,      fromBase: v => v / 3.78541 },
+    ml:    { label: 'Millilitre',  symbol: 'mL',   toBase: v => v * 0.001,           fromBase: v => v / 0.001 },
+    l:     { label: 'Litre',       symbol: 'L',    toBase: v => v,                   fromBase: v => v },
+    m3:    { label: 'Cubic Metre', symbol: 'm³',   toBase: v => v * 1000,            fromBase: v => v / 1000 },
+    tsp:   { label: 'Teaspoon',    symbol: 'tsp',  toBase: v => v * 0.00492892,      fromBase: v => v / 0.00492892 },
+    tbsp:  { label: 'Tablespoon',  symbol: 'tbsp', toBase: v => v * 0.0147868,       fromBase: v => v / 0.0147868 },
+    cup:   { label: 'Cup',         symbol: 'cup',  toBase: v => v * 0.236588,        fromBase: v => v / 0.236588 },
+    pt:    { label: 'Pint',        symbol: 'pt',   toBase: v => v * 0.473176,        fromBase: v => v / 0.473176 },
+    gal:   { label: 'Gallon',      symbol: 'gal',  toBase: v => v * 3.78541,         fromBase: v => v / 3.78541 },
   },
   speed: {
-    mps:   { label: 'Metres/sec',  symbol: 'm/s', toBase: v => v,                fromBase: v => v },
-    kph:   { label: 'Km/hour',     symbol: 'km/h',toBase: v => v / 3.6,          fromBase: v => v * 3.6 },
-    mph:   { label: 'Miles/hour',  symbol: 'mph', toBase: v => v * 0.44704,      fromBase: v => v / 0.44704 },
-    knot:  { label: 'Knot',        symbol: 'kn',  toBase: v => v * 0.514444,     fromBase: v => v / 0.514444 },
-    fps:   { label: 'Feet/sec',    symbol: 'ft/s',toBase: v => v * 0.3048,       fromBase: v => v / 0.3048 },
+    mps:   { label: 'Metres/sec',  symbol: 'm/s',  toBase: v => v,                   fromBase: v => v },
+    kph:   { label: 'Km/hour',     symbol: 'km/h', toBase: v => v / 3.6,             fromBase: v => v * 3.6 },
+    mph:   { label: 'Miles/hour',  symbol: 'mph',  toBase: v => v * 0.44704,         fromBase: v => v / 0.44704 },
+    knot:  { label: 'Knot',        symbol: 'kn',   toBase: v => v * 0.514444,        fromBase: v => v / 0.514444 },
+    fps:   { label: 'Feet/sec',    symbol: 'ft/s', toBase: v => v * 0.3048,          fromBase: v => v / 0.3048 },
+  },
+
+  // ── Sound ──────────────────────────────────────────────────────────────────
+  // Base unit: decibel (dB SPL)
+  // dB ↔ dB: trivial (same scale, just offset labels)
+  // dB ↔ Pa  : p = p_ref × 10^(dB/20),  p_ref = 20 µPa = 0.00002 Pa
+  // dB ↔ nPa : same but ×1e9
+  // dB ↔ Np  : 1 Np = 20/ln(10) dB  ≈ 8.6859 dB
+  // dB ↔ B   : 1 B = 10 dB
+  // dB ↔ mB  : 1 mB = 0.1 dB (milli-bel)
+  sound: {
+    dB:  {
+      label: 'Decibel',
+      symbol: 'dB',
+      toBase:   v => v,
+      fromBase: v => v,
+    },
+    B:   {
+      label: 'Bel',
+      symbol: 'B',
+      toBase:   v => v * 10,          // 1 B = 10 dB
+      fromBase: v => v / 10,
+    },
+    mB:  {
+      label: 'Milli-bel',
+      symbol: 'mB',
+      toBase:   v => v * 0.1,         // 1 mB = 0.1 dB
+      fromBase: v => v / 0.1,
+    },
+    Np:  {
+      label: 'Neper',
+      symbol: 'Np',
+      // 1 Np = 20/ln(10) dB ≈ 8.68589 dB
+      toBase:   v => v * (20 / Math.LN10),
+      fromBase: v => v / (20 / Math.LN10),
+    },
+    Pa:  {
+      label: 'Pascal (SPL)',
+      symbol: 'Pa',
+      // dB = 20 × log10(Pa / 0.00002)  →  Pa = 0.00002 × 10^(dB/20)
+      toBase:   v => 20 * Math.log10(v / 0.00002),
+      fromBase: v => 0.00002 * Math.pow(10, v / 20),
+    },
+    mPa: {
+      label: 'Millipascal',
+      symbol: 'mPa',
+      toBase:   v => 20 * Math.log10((v * 0.001) / 0.00002),
+      fromBase: v => (0.00002 * Math.pow(10, v / 20)) / 0.001,
+    },
+    µPa: {
+      label: 'Micropascal',
+      symbol: 'µPa',
+      toBase:   v => 20 * Math.log10((v * 1e-6) / 0.00002),
+      fromBase: v => (0.00002 * Math.pow(10, v / 20)) / 1e-6,
+    },
   },
 };
 
-const CATEGORY_META: Record<Category, { icon: string; color: string }> = {
-  length:      { icon: '📏', color: '#3b82f6' },
-  weight:      { icon: '⚖️', color: '#22c55e' },
-  temperature: { icon: '🌡️', color: '#f97316' },
-  volume:      { icon: '🧪', color: '#a855f7' },
-  speed:       { icon: '⚡', color: '#ec4899' },
+const CATEGORY_META: Record<Category, CategoryMeta> = {
+  length:      { icon: 'resize-outline',      color: '#3b82f6' },
+  weight:      { icon: 'barbell-outline',     color: '#22c55e' },
+  temperature: { icon: 'thermometer-outline', color: '#f97316' },
+  volume:      { icon: 'beaker-outline',      color: '#a855f7' },
+  speed:       { icon: 'speedometer-outline', color: '#ec4899' },
+  sound:       { icon: 'volume-high-outline', color: '#f59e0b' },
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -87,13 +151,11 @@ function convert(value: number, category: Category, from: string, to: string): n
 }
 
 function formatResult(n: number): string {
-  if (!isFinite(n)) return 'Error';
+  if (!isFinite(n) || isNaN(n)) return 'Error';
   if (Math.abs(n) >= 1e9 || (Math.abs(n) < 1e-4 && n !== 0)) {
     return n.toExponential(6);
   }
-  // Up to 8 significant figures, strip trailing zeros
-  const str = parseFloat(n.toPrecision(8)).toString();
-  return str;
+  return parseFloat(n.toPrecision(8)).toString();
 }
 
 // ─── Sub-Components ──────────────────────────────────────────────────────────
@@ -136,6 +198,33 @@ function UnitPicker({ category, selected, onSelect }: UnitPickerProps) {
   );
 }
 
+// ─── Sound info banner ───────────────────────────────────────────────────────
+
+const SOUND_REFERENCES: { label: string; dB: number }[] = [
+  { label: 'Whisper',      dB: 30  },
+  { label: 'Normal talk',  dB: 60  },
+  { label: 'Busy traffic', dB: 85  },
+  { label: 'Concert',      dB: 110 },
+  { label: 'Jet engine',   dB: 140 },
+];
+
+function SoundReferenceBanner({ accentColor }: { accentColor: string }) {
+  return (
+    <View style={[styles.soundBanner, { borderColor: accentColor + '33' }]}>
+      <Text style={[styles.soundBannerTitle, { color: accentColor }]}>Common Sound Levels</Text>
+      <View style={styles.soundBannerRow}>
+        {SOUND_REFERENCES.map(ref => (
+          <View key={ref.label} style={styles.soundBannerItem}>
+            <Text style={[styles.soundBannerDB, { color: accentColor }]}>{ref.dB}</Text>
+            <Text style={styles.soundBannerUnit}>dB</Text>
+            <Text style={styles.soundBannerLabel}>{ref.label}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function UnitConverter() {
@@ -147,13 +236,13 @@ export default function UnitConverter() {
 
   const accentColor = CATEGORY_META[category].color;
 
-  // Default units when switching category
   const defaultUnits: Record<Category, [string, string]> = {
     length:      ['m', 'km'],
     weight:      ['kg', 'lb'],
     temperature: ['C', 'F'],
     volume:      ['l', 'gal'],
     speed:       ['kph', 'mph'],
+    sound:       ['dB', 'Pa'],
   };
 
   const handleCategoryChange = (cat: Category) => {
@@ -167,7 +256,6 @@ export default function UnitConverter() {
 
   const handleInput = useCallback((text: string) => {
     setError('');
-    // Allow negative, decimal
     if (text === '' || text === '-' || text === '.') {
       setInputText(text);
       return;
@@ -182,7 +270,6 @@ export default function UnitConverter() {
   const handleSwap = () => {
     setFromUnit(toUnit);
     setToUnit(fromUnit);
-    // Recalculate input as result
     if (inputText && resultValue !== null) {
       setInputText(formatResult(resultValue));
     }
@@ -223,7 +310,11 @@ export default function UnitConverter() {
                   ]}
                   activeOpacity={0.75}
                 >
-                  <Text style={styles.tabIcon}>{meta.icon}</Text>
+                  <Ionicons
+                    name={meta.icon}
+                    size={15}
+                    color={active ? meta.color : '#555'}
+                  />
                   <Text style={[styles.tabText, active && { color: meta.color }]}>
                     {cat.charAt(0).toUpperCase() + cat.slice(1)}
                   </Text>
@@ -241,7 +332,6 @@ export default function UnitConverter() {
             <UnitPicker category={category} selected={fromUnit} onSelect={u => {
               setFromUnit(u);
               if (u === toUnit) {
-                // pick the next different unit
                 const keys = Object.keys(UNITS[category]);
                 const next = keys.find(k => k !== u) ?? u;
                 setToUnit(next);
@@ -266,8 +356,12 @@ export default function UnitConverter() {
           </View>
 
           {/* Swap Button */}
-          <TouchableOpacity onPress={handleSwap} style={[styles.swapBtn, { borderColor: accentColor + '55' }]} activeOpacity={0.7}>
-            <Text style={[styles.swapIcon, { color: accentColor }]}>⇅</Text>
+          <TouchableOpacity
+            onPress={handleSwap}
+            style={[styles.swapBtn, { borderColor: accentColor + '55' }]}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="swap-vertical-outline" size={18} color={accentColor} />
             <Text style={[styles.swapLabel, { color: accentColor + 'aa' }]}>swap</Text>
           </TouchableOpacity>
 
@@ -304,6 +398,11 @@ export default function UnitConverter() {
               {`${numInput} ${UNITS[category][fromUnit].symbol}  =  ${resultText} ${UNITS[category][toUnit].symbol}`}
             </Text>
           </View>
+        )}
+
+        {/* Sound reference banner — only shown for sound category */}
+        {category === 'sound' && (
+          <SoundReferenceBanner accentColor={accentColor} />
         )}
 
         {/* Quick Reference */}
@@ -379,9 +478,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#161620',
     borderWidth: 1,
     borderColor: '#252530',
-  },
-  tabIcon: {
-    fontSize: 15,
   },
   tabText: {
     color: '#666',
@@ -488,10 +584,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginVertical: 8,
   },
-  swapIcon: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
   swapLabel: {
     fontSize: 12,
     fontWeight: '600',
@@ -541,6 +633,45 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     fontWeight: '500',
+  },
+
+  // Sound reference banner
+  soundBanner: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    backgroundColor: '#12121a',
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+  },
+  soundBannerTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    marginBottom: 10,
+  },
+  soundBannerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  soundBannerItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  soundBannerDB: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  soundBannerUnit: {
+    fontSize: 9,
+    color: '#555',
+    marginTop: -1,
+  },
+  soundBannerLabel: {
+    fontSize: 8,
+    color: '#444',
+    marginTop: 3,
+    textAlign: 'center',
   },
 
   // Quick Reference
