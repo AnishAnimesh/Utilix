@@ -12,6 +12,7 @@ export default function HomeScreen() {
     { title: 'Currency Converter', icon: 'currency-usd', route: '/currency' },
     { title: 'Split Bill', icon: 'account-group', route: '/split' },
     { title: 'Age Calculator', icon: 'calendar', route: '/age' },
+    { title: 'Internet Speed', icon: 'wifi', route: '/speed' },
   ];
 
   return (
