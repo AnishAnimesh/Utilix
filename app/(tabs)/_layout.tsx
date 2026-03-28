@@ -1,5 +1,4 @@
 import { Stack } from 'expo-router';
-import { IconButton } from 'react-native-paper';
 
 export default function Layout() {
   return (
@@ -8,15 +7,11 @@ export default function Layout() {
         headerTitle: 'Utilix',
         headerTitleAlign: 'left',
 
-        // 🔥 THIS FIXES SPACE
-        headerShadowVisible: false,
-
-        headerRight: () => (
-          <IconButton
-            icon="dots-vertical"
-            onPress={() => console.log('Menu')}
-          />
-        ),
+        // 🔥 MAKE TEXT BIG & BOLD
+        headerTitleStyle: {
+          fontSize: 26,
+          fontWeight: 'bold',
+        },
       }}
     />
   );

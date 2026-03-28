@@ -42,14 +42,24 @@ npx expo start
 .
 ├── App.js
 ├── app.json
+├── expo-env.d.ts
 ├── package.json
-├── tsconfig.json
 ├── README.md
+├── tsconfig.json
 ├── assets
 │   └── images
 ├── app
 │   ├── _layout.tsx
+│   ├── age.tsx
+│   ├── calculator.tsx
+│   ├── currency.tsx
+│   ├── finance.tsx
 │   ├── modal.tsx
+│   ├── password.tsx
+│   ├── reminder.tsx
+│   ├── speed.tsx
+│   ├── split.tsx
+│   ├── unit.tsx
 │   └── (tabs)
 │       ├── _layout.tsx
 │       ├── explore.tsx
@@ -71,9 +81,6 @@ npx expo start
 │   ├── use-color-scheme.ts
 │   ├── use-color-scheme.web.ts
 │   └── use-theme-color.ts
-├── screens
-│   ├── Homescreen.js
-│   └── Unitconverter.js
 └── scripts
     └── reset-project.js
 ```
@@ -84,7 +91,6 @@ npx expo start
 - `components/`: Shared UI components and helper widgets
 - `constants/`: App-wide constants like theme colors and typography
 - `hooks/`: Custom hooks for theming and platform-specific behavior
-- `screens/`: Legacy or standalone screen entries
 - `scripts/`: Automation and setup scripts
 
 ## Contributing
