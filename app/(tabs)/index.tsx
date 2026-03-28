@@ -1,6 +1,6 @@
 import { StyleSheet, ScrollView, View } from 'react-native';
-import { Text, Card, Button, Avatar } from 'react-native-paper';
-import { router } from 'expo-router';
+import { Text, Card, Avatar } from 'react-native-paper';
+import { router, Stack } from 'expo-router';
 
 export default function HomeScreen() {
   const features = [
@@ -13,57 +13,60 @@ export default function HomeScreen() {
   ];
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Utilix</Text>
+    <>
+      {/* 🔥 removes "index" */}
+      <Stack.Screen options={{ title: '' }} />
 
-      <View style={styles.grid}>
-        {features.map((item, index) => (
-          <Card key={index} style={styles.card}>
-            <Card.Title
-              title={item.title}
-              titleStyle={{ fontSize: 14 }}
-              left={(props) => (
-                <Avatar.Icon {...props} icon={item.icon} size={40} />
-              )}
-            />
-            <Card.Actions>
-              <Button
-                onPress={() => item.route && router.push(item.route)}
-              >
-                Open
-              </Button>
-            </Card.Actions>
-          </Card>
-        ))}
-      </View>
-    </ScrollView>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.grid}>
+          {features.map((item, index) => (
+            <Card
+              key={index}
+              style={styles.card}
+              onPress={() => item.route && router.push(item.route)} // 🔥 full card clickable
+            >
+              <Card.Content style={styles.cardContent}>
+                <Avatar.Icon icon={item.icon} size={50} />
+                <Text style={styles.cardText}>{item.title}</Text>
+              </Card.Content>
+            </Card>
+          ))}
+        </View>
+      </ScrollView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 15,
+    paddingHorizontal: 15,
+    paddingTop: 5,   // 🔥 reduces space under header
     paddingBottom: 30,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
 
-  // 🔥 GRID STYLE
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
 
-  // 🔥 EACH CARD = 2 columns
   card: {
-    width: '48%',   // IMPORTANT → makes 2 columns
+    width: '48%',
     marginBottom: 12,
     borderRadius: 12,
     elevation: 3,
+  },
+
+  // 🔥 centers content (clean UI)
+  cardContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+    gap: 10,
+  },
+
+  cardText: {
+    textAlign: 'center',
+    fontSize: 14,
   },
 });
