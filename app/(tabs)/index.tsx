@@ -38,11 +38,11 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 15,
-    paddingTop: 5,   // 🔥 reduces space under header
-    paddingBottom: 30,
-  },
+container: {
+  paddingHorizontal: 15,
+  paddingTop: 20,   // 🔥 IMPORTANT (was 5 or 15 before)
+  paddingBottom: 30,
+},
 
   grid: {
     flexDirection: 'row',

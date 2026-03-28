@@ -1,11 +1,23 @@
 import { Stack } from 'expo-router';
-import { Provider as PaperProvider } from 'react-native-paper';
+import { IconButton } from 'react-native-paper';
 
-
-export default function RootLayout() {
+export default function Layout() {
   return (
-    <PaperProvider>
-      <Stack />
-    </PaperProvider>
+    <Stack
+      screenOptions={{
+        headerTitle: 'Utilix',
+        headerTitleAlign: 'left',
+
+        // 🔥 THIS FIXES SPACE
+        headerShadowVisible: false,
+
+        headerRight: () => (
+          <IconButton
+            icon="dots-vertical"
+            onPress={() => console.log('Menu')}
+          />
+        ),
+      }}
+    />
   );
 }
