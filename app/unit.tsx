@@ -75,60 +75,14 @@ const UNITS: Record<Category, Record<string, UnitDef>> = {
     knot:  { label: 'Knot',        symbol: 'kn',   toBase: v => v * 0.514444,        fromBase: v => v / 0.514444 },
     fps:   { label: 'Feet/sec',    symbol: 'ft/s', toBase: v => v * 0.3048,          fromBase: v => v / 0.3048 },
   },
-
-  // ── Sound ──────────────────────────────────────────────────────────────────
-  // Base unit: decibel (dB SPL)
-  // dB ↔ dB: trivial (same scale, just offset labels)
-  // dB ↔ Pa  : p = p_ref × 10^(dB/20),  p_ref = 20 µPa = 0.00002 Pa
-  // dB ↔ nPa : same but ×1e9
-  // dB ↔ Np  : 1 Np = 20/ln(10) dB  ≈ 8.6859 dB
-  // dB ↔ B   : 1 B = 10 dB
-  // dB ↔ mB  : 1 mB = 0.1 dB (milli-bel)
   sound: {
-    dB:  {
-      label: 'Decibel',
-      symbol: 'dB',
-      toBase:   v => v,
-      fromBase: v => v,
-    },
-    B:   {
-      label: 'Bel',
-      symbol: 'B',
-      toBase:   v => v * 10,          // 1 B = 10 dB
-      fromBase: v => v / 10,
-    },
-    mB:  {
-      label: 'Milli-bel',
-      symbol: 'mB',
-      toBase:   v => v * 0.1,         // 1 mB = 0.1 dB
-      fromBase: v => v / 0.1,
-    },
-    Np:  {
-      label: 'Neper',
-      symbol: 'Np',
-      // 1 Np = 20/ln(10) dB ≈ 8.68589 dB
-      toBase:   v => v * (20 / Math.LN10),
-      fromBase: v => v / (20 / Math.LN10),
-    },
-    Pa:  {
-      label: 'Pascal (SPL)',
-      symbol: 'Pa',
-      // dB = 20 × log10(Pa / 0.00002)  →  Pa = 0.00002 × 10^(dB/20)
-      toBase:   v => 20 * Math.log10(v / 0.00002),
-      fromBase: v => 0.00002 * Math.pow(10, v / 20),
-    },
-    mPa: {
-      label: 'Millipascal',
-      symbol: 'mPa',
-      toBase:   v => 20 * Math.log10((v * 0.001) / 0.00002),
-      fromBase: v => (0.00002 * Math.pow(10, v / 20)) / 0.001,
-    },
-    µPa: {
-      label: 'Micropascal',
-      symbol: 'µPa',
-      toBase:   v => 20 * Math.log10((v * 1e-6) / 0.00002),
-      fromBase: v => (0.00002 * Math.pow(10, v / 20)) / 1e-6,
-    },
+    dB:  { label: 'Decibel',      symbol: 'dB',   toBase: v => v,                                    fromBase: v => v },
+    B:   { label: 'Bel',          symbol: 'B',    toBase: v => v * 10,                               fromBase: v => v / 10 },
+    mB:  { label: 'Milli-bel',   symbol: 'mB',   toBase: v => v * 0.1,                              fromBase: v => v / 0.1 },
+    Np:  { label: 'Neper',        symbol: 'Np',   toBase: v => v * (20 / Math.LN10),                 fromBase: v => v / (20 / Math.LN10) },
+    Pa:  { label: 'Pascal (SPL)', symbol: 'Pa',   toBase: v => 20 * Math.log10(v / 0.00002),         fromBase: v => 0.00002 * Math.pow(10, v / 20) },
+    mPa: { label: 'Millipascal',  symbol: 'mPa',  toBase: v => 20 * Math.log10((v * 0.001) / 0.00002), fromBase: v => (0.00002 * Math.pow(10, v / 20)) / 0.001 },
+    µPa: { label: 'Micropascal',  symbol: 'µPa',  toBase: v => 20 * Math.log10((v * 1e-6) / 0.00002),  fromBase: v => (0.00002 * Math.pow(10, v / 20)) / 1e-6 },
   },
 };
 
@@ -198,7 +152,7 @@ function UnitPicker({ category, selected, onSelect }: UnitPickerProps) {
   );
 }
 
-// ─── Sound info banner ───────────────────────────────────────────────────────
+// ─── Sound Reference Banner ──────────────────────────────────────────────────
 
 const SOUND_REFERENCES: { label: string; dB: number }[] = [
   { label: 'Whisper',      dB: 30  },
@@ -282,7 +236,7 @@ export default function UnitConverter() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#0a0a0f" />
+      <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
@@ -306,14 +260,14 @@ export default function UnitConverter() {
                   onPress={() => handleCategoryChange(cat)}
                   style={[
                     styles.tab,
-                    active && { backgroundColor: meta.color + '22', borderColor: meta.color },
+                    active && { backgroundColor: meta.color + '18', borderColor: meta.color },
                   ]}
                   activeOpacity={0.75}
                 >
                   <Ionicons
                     name={meta.icon}
                     size={15}
-                    color={active ? meta.color : '#555'}
+                    color={active ? meta.color : '#94a3b8'}
                   />
                   <Text style={[styles.tabText, active && { color: meta.color }]}>
                     {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -341,7 +295,7 @@ export default function UnitConverter() {
               <TextInput
                 style={[styles.mainInput, { color: accentColor }]}
                 placeholder="Enter value…"
-                placeholderTextColor="#444"
+                placeholderTextColor="#94a3b8"
                 value={inputText}
                 onChangeText={handleInput}
                 keyboardType="decimal-pad"
@@ -358,11 +312,11 @@ export default function UnitConverter() {
           {/* Swap Button */}
           <TouchableOpacity
             onPress={handleSwap}
-            style={[styles.swapBtn, { borderColor: accentColor + '55' }]}
+            style={[styles.swapBtn, { borderColor: accentColor + '44', backgroundColor: accentColor + '0d' }]}
             activeOpacity={0.7}
           >
             <Ionicons name="swap-vertical-outline" size={18} color={accentColor} />
-            <Text style={[styles.swapLabel, { color: accentColor + 'aa' }]}>swap</Text>
+            <Text style={[styles.swapLabel, { color: accentColor }]}>swap</Text>
           </TouchableOpacity>
 
           {/* TO Section */}
@@ -376,7 +330,7 @@ export default function UnitConverter() {
                 setFromUnit(next);
               }
             }} />
-            <View style={[styles.resultWrap, { backgroundColor: accentColor + '11', borderColor: accentColor + '33' }]}>
+            <View style={[styles.resultWrap, { backgroundColor: accentColor + '0d', borderColor: accentColor + '33' }]}>
               {resultText ? (
                 <>
                   <Text style={[styles.resultValue, { color: accentColor }]}>{resultText}</Text>
@@ -400,7 +354,7 @@ export default function UnitConverter() {
           </View>
         )}
 
-        {/* Sound reference banner — only shown for sound category */}
+        {/* Sound reference banner */}
         {category === 'sound' && (
           <SoundReferenceBanner accentColor={accentColor} />
         )}
@@ -434,7 +388,7 @@ export default function UnitConverter() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#0a0a0f',
+    backgroundColor: '#f8fafc',
   },
   scroll: {
     paddingBottom: 40,
@@ -449,12 +403,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#ffffff',
+    color: '#0f172a',
     letterSpacing: -0.5,
   },
   headerSub: {
     fontSize: 13,
-    color: '#555',
+    color: '#94a3b8',
     marginTop: 2,
   },
 
@@ -475,12 +429,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: 50,
-    backgroundColor: '#161620',
+    backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#252530',
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
   tabText: {
-    color: '#666',
+    color: '#94a3b8',
     fontSize: 13,
     fontWeight: '600',
   },
@@ -488,12 +447,17 @@ const styles = StyleSheet.create({
   // Converter card
   card: {
     marginHorizontal: 16,
-    backgroundColor: '#12121a',
+    backgroundColor: '#ffffff',
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#1e1e2e',
+    borderColor: '#e2e8f0',
     gap: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
 
   // Section
@@ -503,7 +467,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#444',
+    color: '#94a3b8',
     letterSpacing: 1.5,
   },
 
@@ -520,34 +484,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 10,
-    backgroundColor: '#1c1c28',
+    backgroundColor: '#f8fafc',
     borderWidth: 1,
-    borderColor: '#252535',
+    borderColor: '#e2e8f0',
     alignItems: 'center',
     minWidth: 56,
   },
   unitChipSymbol: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#ccc',
+    color: '#475569',
   },
   unitChipSymbolActive: {
     color: '#fff',
   },
   unitChipLabel: {
     fontSize: 9,
-    color: '#555',
+    color: '#94a3b8',
     marginTop: 1,
   },
   unitChipLabelActive: {
-    color: 'rgba(255,255,255,0.7)',
+    color: 'rgba(255,255,255,0.8)',
   },
 
   // Input
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0e0e18',
+    backgroundColor: '#f8fafc',
     borderRadius: 14,
     borderWidth: 1.5,
     paddingHorizontal: 16,
@@ -567,7 +531,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   errorText: {
-    color: '#f87171',
+    color: '#ef4444',
     fontSize: 12,
     marginTop: -4,
   },
@@ -613,7 +577,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   resultPlaceholder: {
-    color: '#333',
+    color: '#cbd5e1',
     fontSize: 15,
   },
 
@@ -621,15 +585,20 @@ const styles = StyleSheet.create({
   formulaCard: {
     marginHorizontal: 16,
     marginTop: 12,
-    backgroundColor: '#12121a',
+    backgroundColor: '#ffffff',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#1e1e2e',
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
   formulaText: {
-    color: '#555',
+    color: '#94a3b8',
     fontSize: 13,
     textAlign: 'center',
     fontWeight: '500',
@@ -639,10 +608,15 @@ const styles = StyleSheet.create({
   soundBanner: {
     marginHorizontal: 16,
     marginTop: 12,
-    backgroundColor: '#12121a',
+    backgroundColor: '#ffffff',
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
+    shadowColor: '#000',
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
   soundBannerTitle: {
     fontSize: 11,
@@ -664,12 +638,12 @@ const styles = StyleSheet.create({
   },
   soundBannerUnit: {
     fontSize: 9,
-    color: '#555',
+    color: '#94a3b8',
     marginTop: -1,
   },
   soundBannerLabel: {
     fontSize: 8,
-    color: '#444',
+    color: '#cbd5e1',
     marginTop: 3,
     textAlign: 'center',
   },
@@ -680,7 +654,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   quickRefTitle: {
-    color: '#444',
+    color: '#94a3b8',
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1.5,
@@ -694,11 +668,16 @@ const styles = StyleSheet.create({
   quickRefItem: {
     width: '30%',
     flexGrow: 1,
-    backgroundColor: '#12121a',
+    backgroundColor: '#ffffff',
     borderRadius: 10,
     padding: 10,
     borderWidth: 1,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
   quickRefSymbol: {
     fontSize: 16,
@@ -706,7 +685,7 @@ const styles = StyleSheet.create({
   },
   quickRefLabel: {
     fontSize: 10,
-    color: '#444',
+    color: '#94a3b8',
     marginTop: 2,
     textAlign: 'center',
   },
