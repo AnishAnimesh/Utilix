@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
+  Alert,
   FlatList,
-  StyleSheet,
-  TouchableOpacity,
+  Platform,
   SafeAreaView,
   StatusBar,
-  Platform,
-  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Ionicons } from '@expo/vector-icons';
 
 export default function FinanceScreen() {
   const [title, setTitle] = useState('');
