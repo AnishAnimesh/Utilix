@@ -11,30 +11,20 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-// ── iPhone 17 Pro Max (430 × 932 pt) fixed values ──────────────────
+// ── iPhone 17 Pro Max (430 × 932 pt) — Scientific only ───────────────
 // SafeArea top ≈ 59, bottom ≈ 34
-// TopBar: 52  |  Display: 120  |  Pad: 932-59-34-52-120 = 667
-// 9 rows (sci) or 5 rows (std), gap 6
-// Sci row height: (667 - 8*6) / 9 ≈ 69  →  use 62 to leave breathing room
-// Std row height: (667 - 4*6) / 5 ≈ 128 →  use 80 (iOS-calculator style)
-const STD_FONT  = 22;
-const SCI_FONT  = 15;
-const DISP_FONT = 56;
-const PREV_FONT = 16;
-const ROW_GAP   = 6;
-// Fixed row heights so scientific fits perfectly on 17 Pro Max
-const STD_ROW_H = 80;   // standard mode: 5 rows × 80 + 4×6 gap = 424 ✓
-const SCI_ROW_H = 62;   // scientific mode: 9 rows × 62 + 8×6 gap = 606 ✓
+// TopBar: 52 | Display: 140 | Pad: 932-59-34-52-140 = 647
+// 9 rows, gap 7 → row height: (647 - 8×7) / 9 ≈ 65
+const ROW_H    = 65;
+const ROW_GAP  = 7;
+const SCI_FONT = 16;
+const DISP_FONT = 58;
+const PREV_FONT = 15;
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type Mode = 'standard' | 'scientific';
-
-// ─── Math helpers ─────────────────────────────────────────────────────────────
+// ─── Math helpers ─────────────────────────────────────────────────────
 
 function safeEval(expr: string): string {
   try {
-    // Replace display symbols with JS equivalents
     let e = expr
       .replace(/×/g, '*')
       .replace(/÷/g, '/')
@@ -49,12 +39,9 @@ function safeEval(expr: string): string {
       .replace(/\^/g, '**')
       .replace(/(\d+)!/g, (_, n) => factorial(parseInt(n)).toString());
 
-    // eslint-disable-next-line no-new-func
     const result = new Function('return ' + e)();
     if (!isFinite(result)) return 'Error';
-    // Format: avoid floating-point noise
-    const rounded = parseFloat(result.toPrecision(12));
-    return rounded.toString();
+    return parseFloat(result.toPrecision(12)).toString();
   } catch {
     return 'Error';
   }
@@ -68,7 +55,6 @@ function factorial(n: number): number {
 
 function formatDisplay(val: string): string {
   if (!val || val === 'Error') return val || '0';
-  // Add thousands separators only to integer part if it's a plain number
   const num = parseFloat(val);
   if (isNaN(num)) return val;
   if (val.includes('e')) return val;
@@ -77,106 +63,87 @@ function formatDisplay(val: string): string {
   return parts.join('.');
 }
 
-// ─── Button Component ─────────────────────────────────────────────────────────
+// ─── Button types & palette ───────────────────────────────────────────
+
+type BtnType = 'number' | 'operator' | 'action' | 'equals' | 'function';
+
+const PALETTE: Record<BtnType, { bg: string; text: string; border: string }> = {
+  number:   { bg: '#ffffff', text: '#111827', border: '#e2e8f0' },
+  operator: { bg: '#eff6ff', text: '#2563eb', border: '#bfdbfe' },
+  action:   { bg: '#f3f4f6', text: '#6b7280', border: '#e5e7eb' },
+  equals:   { bg: '#2563eb', text: '#ffffff', border: '#2563eb' },
+  function: { bg: '#f5f3ff', text: '#7c3aed', border: '#ddd6fe' },
+};
+
+// ─── Button Component ─────────────────────────────────────────────────
 
 interface BtnProps {
   label: string;
   onPress: () => void;
-  type?: 'number' | 'operator' | 'action' | 'equals' | 'function';
+  type?: BtnType;
   wide?: boolean;
   fSize?: number;
 }
 
-function CalcBtn({ label, onPress, type = 'number', wide = false, fSize }: BtnProps) {
-  const bg = {
-    number:   '#f9fafb',
-    operator: '#eff6ff',
-    action:   '#f3f4f6',
-    equals:   '#1dbf73',
-    function: '#faf5ff',
-  }[type];
-
-  const tc = {
-    number:   '#111827',
-    operator: '#3b82f6',
-    action:   '#6b7280',
-    equals:   '#ffffff',
-    function: '#7c3aed',
-  }[type];
-
-  const border = {
-    number:   '#e5e7eb',
-    operator: '#bfdbfe',
-    action:   '#e5e7eb',
-    equals:   '#1dbf73',
-    function: '#e9d5ff',
-  }[type];
+function CalcBtn({ label, onPress, type = 'number', wide = false, fSize = SCI_FONT }: BtnProps) {
+  const { bg, text, border } = PALETTE[type];
 
   return (
     <TouchableOpacity
       onPress={onPress}
-      activeOpacity={0.7}
+      activeOpacity={0.65}
       style={[
         styles.btn,
         { backgroundColor: bg, borderColor: border },
-        wide && { flex: 2, marginRight: 5 },
+        wide && { flex: 2 },
         type === 'equals' && {
-          shadowColor: '#1dbf73',
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-          shadowOffset: { width: 0, height: 3 },
-          elevation: 4,
+          shadowColor: '#2563eb',
+          shadowOpacity: 0.45,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: 6,
         },
       ]}
     >
-      <Text style={[styles.btnText, { color: tc }, fSize ? { fontSize: fSize } : {}]}>
+      <Text style={[styles.btnText, { color: text, fontSize: fSize }]}>
         {label}
       </Text>
     </TouchableOpacity>
   );
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+// ─── Main ─────────────────────────────────────────────────────────────
 
 export default function Calculator() {
-  const [input, setInput]         = useState('');
-  const [result, setResult]       = useState('');
-  const [history, setHistory]     = useState<string[]>([]);
-  const [mode, setMode]           = useState<Mode>('standard');
-  const [showHistory, setShowHistory] = useState(false);
-  const [isDeg, setIsDeg]         = useState(true);
+  const [input, setInput]     = useState('');
+  const [result, setResult]   = useState('');
+  const [history, setHistory] = useState<string[]>([]);
+  const [showHist, setShowHist] = useState(false);
+  const [isDeg, setIsDeg]     = useState(true);
 
   const display = input || '0';
 
   const append = (val: string) => {
     if (result && !isNaN(parseFloat(result)) && /^[0-9.(π]/.test(val)) {
-      // Start fresh after a result, unless continuing with operator
-      setInput(val);
-      setResult('');
+      setInput(val); setResult('');
     } else {
-      setInput(prev => {
-        if (prev === 'Error') return val;
-        return prev + val;
-      });
+      setInput(prev => prev === 'Error' ? val : prev + val);
     }
   };
 
-  const backspace = () => setInput(p => (p.length > 1 ? p.slice(0, -1) : ''));
+  const backspace = () => setInput(p => p.length > 1 ? p.slice(0, -1) : '');
   const clear     = () => { setInput(''); setResult(''); };
   const clearAll  = () => { setInput(''); setResult(''); setHistory([]); };
 
   const calculate = () => {
     if (!input || input === 'Error') return;
     let expr = input;
-
-    // Degree → radian conversion for trig
     if (isDeg) {
       expr = expr
         .replace(/Math\.sin\(([^)]+)\)/g, (_, a) => `Math.sin((${a})*Math.PI/180)`)
         .replace(/Math\.cos\(([^)]+)\)/g, (_, a) => `Math.cos((${a})*Math.PI/180)`)
         .replace(/Math\.tan\(([^)]+)\)/g, (_, a) => `Math.tan((${a})*Math.PI/180)`);
     }
-
     const res = safeEval(expr);
     setHistory(h => [`${input} = ${res}`, ...h.slice(0, 19)]);
     setResult(res);
@@ -189,135 +156,134 @@ export default function Calculator() {
     if (fn === '1/x') { setInput(p => `1/(${p || '0'})`); return; }
     if (fn === '|x|') { setInput(p => `Math.abs(${p || '0'})`); return; }
     if (fn === 'n!') { append('!'); return; }
-    if (fn === 'EE') { append('e+'); return; }
-    // Functions that need open paren
     append(`${fn}(`);
   };
 
-  // ── Standard buttons ──
-  const stdRows = [
+  // ── All 9 rows ──────────────────────────────────────────────────────
+  const rows = [
+    // Row 1 – scientific tools
     [
-      { l: 'AC',  t: 'action',   fn: () => clear() },
-      { l: '+/-', t: 'action',   fn: () => setInput(p => p.startsWith('-') ? p.slice(1) : '-' + p) },
-      { l: '%',   t: 'action',   fn: () => setInput(p => (parseFloat(p) / 100).toString()) },
-      { l: '÷',   t: 'operator', fn: () => append('÷') },
+      { l: isDeg ? 'DEG' : 'RAD', t: 'action'   as BtnType, fn: () => setIsDeg(d => !d) },
+      { l: 'x²',   t: 'function' as BtnType, fn: () => applyFn('x²') },
+      { l: 'xʸ',   t: 'function' as BtnType, fn: () => applyFn('xʸ') },
+      { l: '1/x',  t: 'function' as BtnType, fn: () => applyFn('1/x') },
     ],
+    // Row 2 – trig
     [
-      { l: '7', t: 'number', fn: () => append('7') },
-      { l: '8', t: 'number', fn: () => append('8') },
-      { l: '9', t: 'number', fn: () => append('9') },
-      { l: '×', t: 'operator', fn: () => append('×') },
+      { l: 'sin', t: 'function' as BtnType, fn: () => applyFn('sin') },
+      { l: 'cos', t: 'function' as BtnType, fn: () => applyFn('cos') },
+      { l: 'tan', t: 'function' as BtnType, fn: () => applyFn('tan') },
+      { l: 'n!',  t: 'function' as BtnType, fn: () => applyFn('n!') },
     ],
+    // Row 3 – log / root
     [
-      { l: '4', t: 'number', fn: () => append('4') },
-      { l: '5', t: 'number', fn: () => append('5') },
-      { l: '6', t: 'number', fn: () => append('6') },
-      { l: '-', t: 'operator', fn: () => append('-') },
+      { l: 'log', t: 'function' as BtnType, fn: () => applyFn('log') },
+      { l: 'ln',  t: 'function' as BtnType, fn: () => applyFn('ln') },
+      { l: '√',   t: 'function' as BtnType, fn: () => applyFn('√') },
+      { l: '|x|', t: 'function' as BtnType, fn: () => applyFn('|x|') },
     ],
+    // Row 4 – constants & brackets
     [
-      { l: '1', t: 'number', fn: () => append('1') },
-      { l: '2', t: 'number', fn: () => append('2') },
-      { l: '3', t: 'number', fn: () => append('3') },
-      { l: '+', t: 'operator', fn: () => append('+') },
+      { l: 'π',  t: 'function' as BtnType, fn: () => append('π') },
+      { l: 'e',  t: 'function' as BtnType, fn: () => append('e') },
+      { l: '(',  t: 'action'   as BtnType, fn: () => append('(') },
+      { l: ')',  t: 'action'   as BtnType, fn: () => append(')') },
     ],
+    // Row 5 – AC / +/- / % / ÷
     [
-      { l: '0',  t: 'number',   fn: () => append('0'), wide: true },
-      { l: '.',  t: 'number',   fn: () => append('.') },
-      { l: '=',  t: 'equals',   fn: () => calculate() },
+      { l: 'AC',  t: 'action'   as BtnType, fn: () => clear() },
+      { l: '+/-', t: 'action'   as BtnType, fn: () => setInput(p => p.startsWith('-') ? p.slice(1) : '-' + p) },
+      { l: '%',   t: 'action'   as BtnType, fn: () => setInput(p => (parseFloat(p) / 100).toString()) },
+      { l: '÷',   t: 'operator' as BtnType, fn: () => append('÷') },
     ],
-  ] as { l: string; t: string; fn: () => void; wide?: boolean }[][];
-
-  // ── Scientific button rows ──
-  const sciRows = [
+    // Row 6
     [
-      { l: isDeg ? 'DEG' : 'RAD', t: 'action',   fn: () => setIsDeg(d => !d) },
-      { l: 'x²',   t: 'function', fn: () => applyFn('x²') },
-      { l: 'xʸ',   t: 'function', fn: () => applyFn('xʸ') },
-      { l: '1/x',  t: 'function', fn: () => applyFn('1/x') },
+      { l: '7', t: 'number' as BtnType, fn: () => append('7') },
+      { l: '8', t: 'number' as BtnType, fn: () => append('8') },
+      { l: '9', t: 'number' as BtnType, fn: () => append('9') },
+      { l: '×', t: 'operator' as BtnType, fn: () => append('×') },
     ],
+    // Row 7
     [
-      { l: 'sin',  t: 'function', fn: () => applyFn('sin') },
-      { l: 'cos',  t: 'function', fn: () => applyFn('cos') },
-      { l: 'tan',  t: 'function', fn: () => applyFn('tan') },
-      { l: 'n!',   t: 'function', fn: () => applyFn('n!') },
+      { l: '4', t: 'number' as BtnType, fn: () => append('4') },
+      { l: '5', t: 'number' as BtnType, fn: () => append('5') },
+      { l: '6', t: 'number' as BtnType, fn: () => append('6') },
+      { l: '-', t: 'operator' as BtnType, fn: () => append('-') },
     ],
+    // Row 8
     [
-      { l: 'log',  t: 'function', fn: () => applyFn('log') },
-      { l: 'ln',   t: 'function', fn: () => applyFn('ln') },
-      { l: '√',    t: 'function', fn: () => applyFn('√') },
-      { l: '|x|',  t: 'function', fn: () => applyFn('|x|') },
+      { l: '1', t: 'number' as BtnType, fn: () => append('1') },
+      { l: '2', t: 'number' as BtnType, fn: () => append('2') },
+      { l: '3', t: 'number' as BtnType, fn: () => append('3') },
+      { l: '+', t: 'operator' as BtnType, fn: () => append('+') },
     ],
+    // Row 9 – wide 0
     [
-      { l: 'π',    t: 'function', fn: () => append('π') },
-      { l: 'e',    t: 'function', fn: () => append('e') },
-      { l: '(',    t: 'action',   fn: () => append('(') },
-      { l: ')',    t: 'action',   fn: () => append(')') },
+      { l: '0', t: 'number' as BtnType,   fn: () => append('0'), wide: true },
+      { l: '.', t: 'number' as BtnType,   fn: () => append('.') },
+      { l: '=', t: 'equals' as BtnType,   fn: () => calculate() },
     ],
-  ] as { l: string; t: string; fn: () => void }[][];
+  ];
 
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
 
       {/* ── History panel ── */}
-      {showHistory && (
-        <View style={styles.historyPanel}>
-          <View style={styles.historyHeader}>
-            <Text style={styles.historyTitle}>History</Text>
-            <TouchableOpacity onPress={() => { clearAll(); setShowHistory(false); }}>
-              <Text style={styles.historyClear}>Clear all</Text>
+      {showHist && (
+        <View style={styles.histPanel}>
+          <View style={styles.histHeader}>
+            <Text style={styles.histTitle}>History</Text>
+            <TouchableOpacity onPress={() => { clearAll(); setShowHist(false); }}>
+              <Text style={styles.histClear}>Clear all</Text>
             </TouchableOpacity>
           </View>
           <ScrollView showsVerticalScrollIndicator={false}>
             {history.length === 0
-              ? <Text style={styles.historyEmpty}>No history yet</Text>
+              ? <Text style={styles.histEmpty}>No history yet</Text>
               : history.map((h, i) => (
                   <TouchableOpacity
                     key={i}
-                    onPress={() => { setInput(h.split(' = ')[1]); setShowHistory(false); }}
-                    style={styles.historyItem}
+                    onPress={() => { setInput(h.split(' = ')[1]); setShowHist(false); }}
+                    style={styles.histItem}
                   >
-                    <Text style={styles.historyExpr}>{h.split(' = ')[0]}</Text>
-                    <Text style={styles.historyResult}>= {h.split(' = ')[1]}</Text>
+                    <Text style={styles.histExpr}>{h.split(' = ')[0]}</Text>
+                    <Text style={styles.histResult}>= {h.split(' = ')[1]}</Text>
                   </TouchableOpacity>
                 ))}
           </ScrollView>
         </View>
       )}
 
-      {/* ── Top controls ── */}
+      {/* ── Top bar ── */}
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => setShowHistory(h => !h)} style={styles.topBtn}>
-          <Ionicons name="time-outline" size={20} color={showHistory ? '#3b82f6' : '#9ca3af'} />
+        <TouchableOpacity onPress={() => setShowHist(h => !h)} style={styles.topBtn}>
+          <Ionicons name="time-outline" size={19} color={showHist ? '#2563eb' : '#9ca3af'} />
         </TouchableOpacity>
-        <View style={styles.modeToggle}>
-          <TouchableOpacity
-            onPress={() => setMode('standard')}
-            style={[styles.modeBtn, mode === 'standard' && styles.modeBtnActive]}
-            activeOpacity={0.8}
-          >
-            <Text style={[styles.modeBtnText, mode === 'standard' && styles.modeBtnTextActive]}>Standard</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setMode('scientific')}
-            style={[styles.modeBtn, mode === 'scientific' && styles.modeBtnActive]}
-            activeOpacity={0.8}
-          >
-            <Text style={[styles.modeBtnText, mode === 'scientific' && styles.modeBtnTextActive]}>Scientific</Text>
-          </TouchableOpacity>
+
+        <View style={styles.titleWrap}>
+          <Text style={styles.topTitle}>Scientific</Text>
+          <View style={[styles.degBadge, isDeg ? styles.degBadgeOn : styles.degBadgeOff]}>
+            <Text style={[styles.degText, isDeg ? styles.degTextOn : styles.degTextOff]}>
+              {isDeg ? 'DEG' : 'RAD'}
+            </Text>
+          </View>
         </View>
+
         <TouchableOpacity onPress={backspace} style={styles.topBtn}>
-          <Ionicons name="backspace-outline" size={20} color="#9ca3af" />
+          <Ionicons name="backspace-outline" size={19} color="#9ca3af" />
         </TouchableOpacity>
       </View>
 
       {/* ── Display ── */}
       <View style={styles.display}>
-        {result ? (
-          <Text style={styles.prevExpr} numberOfLines={1}>{input !== result ? input : ''}</Text>
-        ) : null}
+        {result !== '' && input !== result && (
+          <Text style={styles.prevExpr} numberOfLines={1}>
+            {input}
+          </Text>
+        )}
         <Text
-          style={[styles.displayText, display.length > 12 && { fontSize: 32 }]}
+          style={[styles.displayText, display.length > 14 && { fontSize: 34 }]}
           numberOfLines={1}
           adjustsFontSizeToFit
         >
@@ -325,33 +291,18 @@ export default function Calculator() {
         </Text>
       </View>
 
+      {/* ── Pad ── */}
       <View style={styles.pad}>
-        {/* Scientific rows */}
-        {mode === 'scientific' && sciRows.map((row, i) => (
-          <View key={i} style={[styles.row, { height: SCI_ROW_H }]}>
+        {rows.map((row, i) => (
+          <View key={i} style={styles.row}>
             {row.map(btn => (
               <CalcBtn
                 key={btn.l}
                 label={btn.l}
                 onPress={btn.fn}
-                type={btn.t as any}
-                fSize={SCI_FONT}
-              />
-            ))}
-          </View>
-        ))}
-
-        {/* Standard rows */}
-        {stdRows.map((row, i) => (
-          <View key={i} style={[styles.row, { height: mode === 'scientific' ? SCI_ROW_H : STD_ROW_H }]}>
-            {row.map(btn => (
-              <CalcBtn
-                key={btn.l}
-                label={btn.l}
-                onPress={btn.fn}
-                type={btn.t as any}
-                wide={btn.wide}
-                fSize={mode === 'scientific' ? SCI_FONT : STD_FONT}
+                type={btn.t}
+                wide={(btn as any).wide}
+                fSize={i < 4 ? SCI_FONT : SCI_FONT + 2}
               />
             ))}
           </View>
@@ -361,7 +312,7 @@ export default function Calculator() {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// ─── Styles ───────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   safe: {
@@ -370,103 +321,106 @@ const styles = StyleSheet.create({
   },
 
   // History
-  historyPanel: {
+  histPanel: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 100 : 80,
-    left: 16, right: 16,
+    top: Platform.OS === 'ios' ? 108 : 88,
+    left: 14, right: 14,
     backgroundColor: '#ffffff',
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
     zIndex: 100,
-    maxHeight: 260,
+    maxHeight: 280,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#e2e8f0',
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 12,
   },
-  historyHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10,
+  histHeader: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', marginBottom: 12,
   },
-  historyTitle: { fontSize: 14, fontWeight: '700', color: '#111827' },
-  historyClear: { fontSize: 12, fontWeight: '600', color: '#ef4444' },
-  historyEmpty: { fontSize: 13, color: '#d1d5db', textAlign: 'center', paddingVertical: 20 },
-  historyItem:  { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  historyExpr:  { fontSize: 12, color: '#9ca3af' },
-  historyResult:{ fontSize: 15, fontWeight: '700', color: '#111827', marginTop: 2 },
+  histTitle:  { fontSize: 14, fontWeight: '700', color: '#111827' },
+  histClear:  { fontSize: 12, fontWeight: '600', color: '#f87171' },
+  histEmpty:  { fontSize: 13, color: '#94a3b8', textAlign: 'center', paddingVertical: 20 },
+  histItem:   { paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: '#1e2538' },
+  histExpr:   { fontSize: 12, color: '#94a3b8' },
+  histResult: { fontSize: 15, fontWeight: '700', color: '#111827', marginTop: 2 },
 
   // Top bar
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? 16 : 8,
-    paddingBottom: 8,
+    paddingHorizontal: 14,
+    paddingTop: Platform.OS === 'android' ? 14 : 6,
+    paddingBottom: 6,
+    height: 52,
   },
   topBtn: {
     width: 36, height: 36, borderRadius: 10,
-    backgroundColor: '#f3f4f6', borderWidth: 1, borderColor: '#e5e7eb',
+    backgroundColor: '#ffffff',
+    borderWidth: 1, borderColor: '#e2e8f0',
     alignItems: 'center', justifyContent: 'center',
   },
-  modeToggle: {
-    flexDirection: 'row',
-    backgroundColor: '#f3f4f6',
-    borderRadius: 10,
-    padding: 3,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+  titleWrap: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
   },
-  modeBtn: {
-    paddingHorizontal: 14, paddingVertical: 6, borderRadius: 8,
+  topTitle: {
+    fontSize: 16, fontWeight: '700', color: '#374151', letterSpacing: 0.3,
   },
-  modeBtnActive: { backgroundColor: '#ffffff', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 3, shadowOffset: { width: 0, height: 1 }, elevation: 1 },
-  modeBtnText: { fontSize: 13, fontWeight: '600', color: '#9ca3af' },
-  modeBtnTextActive: { color: '#111827' },
+  degBadge: {
+    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1,
+  },
+  degBadgeOn:  { backgroundColor: '#eff6ff', borderColor: '#bfdbfe' },
+  degBadgeOff: { backgroundColor: '#f3f4f6', borderColor: '#e5e7eb' },
+  degText:     { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+  degTextOn:   { color: '#2563eb' },
+  degTextOff:  { color: '#9ca3af' },
 
   // Display
   display: {
-    height: 120,
+    height: 140,
     paddingHorizontal: 20,
     justifyContent: 'flex-end',
     alignItems: 'flex-end',
-    paddingBottom: 10,
+    paddingBottom: 12,
   },
   prevExpr: {
     fontSize: PREV_FONT,
-    color: '#9ca3af',
+    color: '#94a3b8',
     marginBottom: 4,
-    fontWeight: '400' as const,
+    fontWeight: '400',
   },
   displayText: {
     fontSize: DISP_FONT,
-    fontWeight: '300',
+    fontWeight: '200',
     color: '#111827',
     letterSpacing: -2,
   },
 
-  // Buttons
+  // Pad
   pad: {
-    paddingHorizontal: 8,
-    paddingBottom: 10,
+    paddingHorizontal: 10,
+    paddingBottom: Platform.OS === 'ios' ? 10 : 14,
     paddingTop: 4,
     gap: ROW_GAP,
   },
   row: {
+    height: ROW_H,
     flexDirection: 'row',
     gap: ROW_GAP,
   },
   btn: {
     flex: 1,
-    borderRadius: 14,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
   },
   btnText: {
-    fontSize: 20,
     fontWeight: '500',
   },
 });
